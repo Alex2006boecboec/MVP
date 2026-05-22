@@ -68,13 +68,9 @@ async function main() {
     },
   ];
 
-  const existingStations = await prisma.station.count();
-  if (existingStations > 0) {
-    console.log(`Skipping station seed: ${existingStations} stations already exist.`);
-    return;
-  }
+  const FEATURED_MODEL = "AnalogWave";
 
-  const models = [
+  const otherModels = [
     "Sony Walkman NW-A306",
     "iPod Classic Reborn",
     "FiiO M11S",
@@ -82,24 +78,52 @@ async function main() {
     "Shanling M3 Ultra",
   ];
 
-  for (const data of stationsData) {
-    const station = await prisma.station.create({ data });
+  const existingStations = await prisma.station.count();
+  if (existingStations === 0) {
+    for (const data of stationsData) {
+      const station = await prisma.station.create({ data });
 
-    const playerCount = 3 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < playerCount; i++) {
-      const model = models[Math.floor(Math.random() * models.length)];
+      const playerCount = 3 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < playerCount; i++) {
+        const model = otherModels[Math.floor(Math.random() * otherModels.length)];
+        await prisma.player.create({
+          data: {
+            model,
+            serialNumber: `${station.id.slice(-4).toUpperCase()}-${i + 1}-${Date.now().toString().slice(-5)}`,
+            batteryLevel: 60 + Math.floor(Math.random() * 41),
+            status: PlayerStatus.AVAILABLE,
+            stationId: station.id,
+            pricePerHour: 50,
+          },
+        });
+      }
+    }
+    console.log(`Created ${stationsData.length} stations with random players.`);
+  } else {
+    console.log(`Skipping station seed: ${existingStations} stations already exist.`);
+  }
+
+  const allStations = await prisma.station.findMany();
+  let featuredAdded = 0;
+  for (const station of allStations) {
+    const hasFeatured = await prisma.player.count({
+      where: { stationId: station.id, model: FEATURED_MODEL },
+    });
+    if (hasFeatured === 0) {
       await prisma.player.create({
         data: {
-          model,
-          serialNumber: `${station.id.slice(-4).toUpperCase()}-${i + 1}-${Date.now().toString().slice(-5)}`,
-          batteryLevel: 60 + Math.floor(Math.random() * 41),
+          model: FEATURED_MODEL,
+          serialNumber: `AW-${station.id.slice(-4).toUpperCase()}-${Date.now().toString().slice(-6)}`,
+          batteryLevel: 100,
           status: PlayerStatus.AVAILABLE,
           stationId: station.id,
           pricePerHour: 50,
         },
       });
+      featuredAdded += 1;
     }
   }
+  console.log(`AnalogWave: added to ${featuredAdded} station(s).`);
 
   console.log("Seed complete.");
 }
