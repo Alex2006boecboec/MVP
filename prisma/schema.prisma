@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PlayerStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+}
+
+enum RentalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  balance   Decimal  @default(500) @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rentals   Rental[]
+}
+
+model Station {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  capacity  Int      @default(8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  players   Player[]
+  rentalsStarted Rental[] @relation("StartStation")
+  rentalsEnded   Rental[] @relation("EndStation")
+}
+
+model Player {
+  id           String       @id @default(cuid())
+  model        String
+  serialNumber String       @unique
+  batteryLevel Int          @default(100)
+  status       PlayerStatus @default(AVAILABLE)
+  pricePerHour Decimal      @default(50) @db.Decimal(10, 2)
+  stationId    String?
+  station      Station?     @relation(fields: [stationId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  rentals      Rental[]
+}
+
+model Rental {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  playerId       String
+  player         Player       @relation(fields: [playerId], references: [id])
+  startStationId String
+  startStation   Station      @relation("StartStation", fields: [startStationId], references: [id])
+  endStationId   String?
+  endStation     Station?     @relation("EndStation", fields: [endStationId], references: [id])
+  status         RentalStatus @default(ACTIVE)
+  startedAt      DateTime     @default(now())
+  endedAt        DateTime?
+  totalCost      Decimal      @default(0) @db.Decimal(10, 2)
+
+  @@index([userId])
+  @@index([playerId])
+}
