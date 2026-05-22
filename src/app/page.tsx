@@ -52,7 +52,7 @@ export default async function HomePage() {
               <div>плееров в наличии</div>
             </div>
             <div>
-              <div className="text-2xl font-semibold text-slate-900">50 ₽</div>
+              <div className="text-2xl font-semibold text-slate-900">от 100 ₽</div>
               <div>за час</div>
             </div>
           </div>

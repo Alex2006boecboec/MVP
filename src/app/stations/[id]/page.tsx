@@ -79,14 +79,28 @@ export default async function StationDetailPage({
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
             {available.map((player) => (
-              <div key={player.id} className="card">
-                <div className="flex items-start justify-between">
+              <div
+                key={player.id}
+                className={`card ${
+                  player.isFlagship
+                    ? "ring-2 ring-brand-500 ring-offset-2 bg-gradient-to-br from-brand-50 to-white"
+                    : ""
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-medium">{player.model}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-medium">{player.model}</h4>
+                      {player.isFlagship && (
+                        <span className="badge bg-brand-600 text-white">
+                          ★ FLAGMAN
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500">SN: {player.serialNumber}</p>
                   </div>
                   <span
-                    className={`badge ${
+                    className={`badge whitespace-nowrap ${
                       player.batteryLevel >= 60
                         ? "bg-emerald-100 text-emerald-700"
                         : player.batteryLevel >= 30

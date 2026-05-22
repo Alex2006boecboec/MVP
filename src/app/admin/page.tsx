@@ -30,6 +30,7 @@ export default async function AdminPage() {
     batteryLevel: p.batteryLevel,
     status: p.status,
     pricePerHour: toNumber(p.pricePerHour),
+    isFlagship: p.isFlagship,
     stationId: p.stationId,
     stationName: p.station?.name ?? null,
   }));

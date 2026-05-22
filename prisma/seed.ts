@@ -69,6 +69,8 @@ async function main() {
   ];
 
   const FEATURED_MODEL = "AnalogWave";
+  const REGULAR_PRICE = 100;
+  const FLAGSHIP_PRICE = 150;
 
   const otherModels = [
     "Sony Walkman NW-A306",
@@ -93,7 +95,8 @@ async function main() {
             batteryLevel: 60 + Math.floor(Math.random() * 41),
             status: PlayerStatus.AVAILABLE,
             stationId: station.id,
-            pricePerHour: 50,
+            pricePerHour: REGULAR_PRICE,
+            isFlagship: false,
           },
         });
       }
@@ -117,13 +120,26 @@ async function main() {
           batteryLevel: 100,
           status: PlayerStatus.AVAILABLE,
           stationId: station.id,
-          pricePerHour: 50,
+          pricePerHour: FLAGSHIP_PRICE,
+          isFlagship: true,
         },
       });
       featuredAdded += 1;
     }
   }
   console.log(`AnalogWave: added to ${featuredAdded} station(s).`);
+
+  const normalizedFlagship = await prisma.player.updateMany({
+    where: { model: FEATURED_MODEL },
+    data: { pricePerHour: FLAGSHIP_PRICE, isFlagship: true },
+  });
+  const normalizedRegular = await prisma.player.updateMany({
+    where: { model: { not: FEATURED_MODEL } },
+    data: { pricePerHour: REGULAR_PRICE, isFlagship: false },
+  });
+  console.log(
+    `Normalized prices: ${normalizedFlagship.count} flagship (${FLAGSHIP_PRICE} ₽), ${normalizedRegular.count} regular (${REGULAR_PRICE} ₽).`,
+  );
 
   console.log("Seed complete.");
 }

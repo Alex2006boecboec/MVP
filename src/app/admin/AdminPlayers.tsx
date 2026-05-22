@@ -10,6 +10,7 @@ interface Player {
   batteryLevel: number;
   status: "AVAILABLE" | "RENTED" | "MAINTENANCE";
   pricePerHour: number;
+  isFlagship: boolean;
   stationId: string | null;
   stationName: string | null;
 }
@@ -42,7 +43,7 @@ export default function AdminPlayers({
   const [model, setModel] = useState("Sony Walkman NW-A306");
   const [serial, setSerial] = useState("");
   const [stationId, setStationId] = useState(stations[0]?.id ?? "");
-  const [price, setPrice] = useState("50");
+  const [price, setPrice] = useState("100");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -161,7 +162,19 @@ export default function AdminPlayers({
             <tbody>
               {players.map((p) => (
                 <tr key={p.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3 font-medium">{p.model}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <div className="flex items-center gap-2">
+                      {p.model}
+                      {p.isFlagship && (
+                        <span className="badge bg-brand-600 text-white text-[10px]">
+                          ★ FLAGMAN
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-slate-500 font-normal">
+                      {p.pricePerHour} ₽ / час
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-xs text-slate-500">{p.serialNumber}</td>
                   <td className="px-4 py-3">{p.stationName ?? <i className="text-slate-400">в аренде</i>}</td>
                   <td className="px-4 py-3">
